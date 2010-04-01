@@ -23,7 +23,7 @@ my $account = {
 };
 
 my $env = {
-    current_dir => $FindBin::Din,
+    current_dir => $FindBin::Bin,
     encoder     => "ffmpeg",
     tmp_dir     => "tmp/",
     mp3_dir     => "mp3/",
@@ -41,7 +41,7 @@ my $nico_url = {
 };
 
 my $console;
-if ($^O =~ /MSWin32/) 
+($^O =~ /MSWin32/) 
     ? $console = find_encoding("cp932") 
     : $console = find_encoding("utf-8")
 ;
@@ -51,8 +51,8 @@ if ($^O =~ /MSWin32/)
 print 'http://www.nicovideo.jp/mylist/';
 chomp($env->{mylist_id} = <STDIN>);
 
-mkdir "$tmp_dir/$env->{mylist_id}" unless (-d "$tmp_dir/$env->{mylist_id}");
-mkdir "$mp3_dir/$env->{mylist_id}" unless (-d "$mp3_dir/$env->{mylist_id}");
+mkdir "$env->{tmp_dir}/$env->{mylist_id}" unless (-d "$env->{tmp_dir}/$env->{mylist_id}");
+mkdir "$env->{mp3_dir}/$env->{mylist_id}" unless (-d "$env->{mp3_dir}/$env->{mylist_id}");
 
 print "E-mail : ";
 chomp($account->{mail} = <STDIN>);
@@ -77,7 +77,7 @@ say "Download $total_file files.";
 while (@video_list) {
     my $video_url = shift @video_list;
 
-    say "processing [ " $total_file - $#video_list . " / $total_file ]";
+    say "processing [ " . $total_file - $#video_list . " / $total_file ]";
 
     my $video_id = $1 if ($video_url =~ /watch\/(\w+)$/gm);
 
@@ -110,7 +110,7 @@ while (@video_list) {
 }
 
 say 'Complete';
-chomp <STDIN>;
+chomp(my $foo= <STDIN>);
 
 exit;
 
@@ -135,7 +135,7 @@ sub write_ID3v2_tag {
     # APIC : Attached picture Keys: MIME type, Picture Type, Description, _Data
 
     $id3v2->add_frame("TIT2", $video_info->{video_title});
-    $id3v2->add_frame("TALB", $mylist_name);
+    $id3v2->add_frame("TALB", $mylist_title);
     $id3v2->add_frame("APIC", "image/jpeg", "Cover (front)", $video_info->{video_title}, $pic);
 
     $id3v2->write_tag;
@@ -178,16 +178,17 @@ sub cwf2fws {
 
 sub save_flv {
     my $video_id = shift;
-    my ($tem, $fh, $flv_path);
+    my ($term, $fh, $flv_path);
 
-    $downloader->download($video_id, sub {
-            my ($data, $resm $proto) = @_;
-            unless ($tem && $fh) {
+    $downloader->download($video_id,
+        sub {
+            my ($data, $res, $proto) = @_;
+            unless ($term && $fh) {
                 my $ext = (split '/', $res->header('Content-Type'))[-1] || 'flv';
                 $flv_path = "$env->{tmp_dir}$env->{mylist_id}/$video_id.$ext";
                 open $fh, ">", $flv_path or die $!;
                 binmode $fh;
-                $tem = Term::ProgressBar->new( $res->header('Content-Length') );
+                $term = Term::ProgressBar->new( $res->header('Content-Length') );
             }
             $term->update( $term->last_update + length $data );
             print {$fh} $data;
