@@ -16,6 +16,7 @@ use FindBin;
 use MP3::Tag;
 use Web::Scraper;
 use Term::ReadKey;
+use File::Path qw/make_path/;
 
 my $account = {
     mail => '',
@@ -51,22 +52,24 @@ my $console;
 print 'http://www.nicovideo.jp/mylist/';
 chomp($env->{mylist_id} = <STDIN>);
 
-mkdir "$env->{tmp_dir}/$env->{mylist_id}" unless (-d "$env->{tmp_dir}/$env->{mylist_id}");
-mkdir "$env->{mp3_dir}/$env->{mylist_id}" unless (-d "$env->{mp3_dir}/$env->{mylist_id}");
+make_path("$env->{tmp_dir}/$env->{mylist_id}") unless (-d "$env->{tmp_dir}/$env->{mylist_id}");
+make_path("$env->{mp3_dir}/$env->{mylist_id}") unless (-d "$env->{mp3_dir}/$env->{mylist_id}");
 
 print "E-mail : ";
 chomp($account->{mail} = <STDIN>);
 
 print "Password : ";
 ReadMode('noecho');
-$account->{password} = ReadLine(0);
+chomp($account->{password} = ReadLine(0));
+ReadMode 0;
 
 my $downloader = WWW::NicoVideo::Download->new(
     email    => $account->{mail},
     password => $account->{password},
 );
+exit unless $downloader->login('sm9');
 my $ua = LWP::UserAgent->new(
-    cookie_jar => $downloader->cookie_jar,
+    cookie_jar => $downloader->user_agent->cookie_jar,
 );
 
 my ($mylist_title, @video_list) = get_video_url_list($env->{mylist_id});
@@ -77,7 +80,7 @@ say "Download $total_file files.";
 while (@video_list) {
     my $video_url = shift @video_list;
 
-    say "processing [ " . $total_file - $#video_list . " / $total_file ]";
+    say "processing [ " . ($total_file - $#video_list) . " / $total_file ]";
 
     my $video_id = $1 if ($video_url =~ /watch\/(\w+)$/gm);
 
