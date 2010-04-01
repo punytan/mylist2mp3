@@ -62,6 +62,7 @@ print "Password : ";
 ReadMode('noecho');
 chomp($account->{password} = ReadLine(0));
 ReadMode 0;
+say;
 
 my $downloader = WWW::NicoVideo::Download->new(
     email    => $account->{mail},
@@ -80,7 +81,7 @@ say "Download $total_file files.";
 while (@video_list) {
     my $video_url = shift @video_list;
 
-    say "processing [ " . ($total_file - $#video_list) . " / $total_file ]";
+    say "processing [ " . ($total_file - $#video_list - 1) . " / $total_file ]";
 
     my $video_id = $1 if ($video_url =~ /watch\/(\w+)$/gm);
 
@@ -139,7 +140,7 @@ sub write_ID3v2_tag {
 
     $id3v2->add_frame("TIT2", $video_info->{video_title});
     $id3v2->add_frame("TALB", $mylist_title);
-    $id3v2->add_frame("APIC", "image/jpeg", "Cover (front)", $video_info->{video_title}, $pic);
+    $id3v2->add_frame("APIC", "image/jpeg", "Cover (front)", 'Thumbnail', $pic);
 
     $id3v2->write_tag;
 }
