@@ -16,7 +16,7 @@ use FindBin;
 use MP3::Tag;
 use Web::Scraper;
 use Term::ReadKey;
-use File::Path qw/make_path/;
+use File::Path;
 
 my $account = {
     mail => '',
@@ -52,8 +52,8 @@ my $console;
 print 'http://www.nicovideo.jp/mylist/';
 chomp($env->{mylist_id} = <STDIN>);
 
-make_path("$env->{tmp_dir}/$env->{mylist_id}") unless (-d "$env->{tmp_dir}/$env->{mylist_id}");
-make_path("$env->{mp3_dir}/$env->{mylist_id}") unless (-d "$env->{mp3_dir}/$env->{mylist_id}");
+mkpath("$env->{tmp_dir}/$env->{mylist_id}") unless (-d "$env->{tmp_dir}/$env->{mylist_id}");
+mkpath("$env->{mp3_dir}/$env->{mylist_id}") unless (-d "$env->{mp3_dir}/$env->{mylist_id}");
 
 print "E-mail : ";
 chomp($account->{mail} = <STDIN>);
