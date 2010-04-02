@@ -50,7 +50,7 @@ else {
 
 # INIT
 
-print "mylist URL:\nhttp://www.nicovideo.jp/mylist/";
+print "mylist URL: http://www.nicovideo.jp/mylist/";
 ReadMode(0);
 $env->{mylist_id} = ReadLine(0);
 $env->{mylist_id} =~ s/[\r\n]//g;
