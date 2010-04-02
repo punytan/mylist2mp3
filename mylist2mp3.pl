@@ -12,7 +12,6 @@ use XML::RSS;
 use XML::Simple;
 use Term::ProgressBar;
 use WWW::NicoVideo::Download;
-use FindBin;
 use MP3::Tag;
 use Web::Scraper;
 use Term::ReadKey;
@@ -23,7 +22,6 @@ my $account = {
 };
 
 my $env = {
-    current_dir => $FindBin::Bin,
     encoder     => "ffmpeg",
     tmp_dir     => "tmp/",
     mp3_dir     => "mp3/",
@@ -52,17 +50,19 @@ else {
 
 # INIT
 
-print 'http://www.nicovideo.jp/mylist/';
-chomp($env->{mylist_id} = <STDIN>);
+print "mylist URL:\nhttp://www.nicovideo.jp/mylist/";
+ReadMode(0);
+$env->{mylist_id} = ReadLine(0);
+$env->{mylist_id} =~ s/[\r\n]//g;
 
 mkdir("./$env->{tmp_dir}") unless (-d "./$env->{tmp_dir}");
 mkdir("./$env->{mp3_dir}") unless (-d "./$env->{mp3_dir}");
-
-mkdir("./$env->{tmp_dir}$env->{mylist_id}") unless (-d "./$env->{tmp_dir}$env->{mylist_id}");
-mkdir("./$env->{mp3_dir}$env->{mylist_id}") unless (-d "./$env->{mp3_dir}$env->{mylist_id}");
+mkdir("./$env->{tmp_dir}/$env->{mylist_id}") unless (-d "$env->{tmp_dir}$env->{mylist_id}");
+mkdir("./$env->{mp3_dir}/$env->{mylist_id}") unless (-d "$env->{mp3_dir}$env->{mylist_id}");
 
 print "E-mail : ";
-$account->{mail} = <STDIN>;
+ReadMode(0);
+$account->{mail} = ReadLine(0);
 $account->{mail} =~ s/[\r\n]//g;
 
 print "Password : ";
@@ -119,7 +119,6 @@ while (@video_list) {
 }
 
 say 'Complete!';
-chomp(my $foo= <STDIN>);
 
 exit;
 
