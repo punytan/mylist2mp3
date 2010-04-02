@@ -16,7 +16,6 @@ use FindBin;
 use MP3::Tag;
 use Web::Scraper;
 use Term::ReadKey;
-use File::Path;
 
 my $account = {
     mail => '',
@@ -52,36 +51,41 @@ my $console;
 print 'http://www.nicovideo.jp/mylist/';
 chomp($env->{mylist_id} = <STDIN>);
 
-mkpath("$env->{tmp_dir}/$env->{mylist_id}") unless (-d "$env->{tmp_dir}/$env->{mylist_id}");
-mkpath("$env->{mp3_dir}/$env->{mylist_id}") unless (-d "$env->{mp3_dir}/$env->{mylist_id}");
+mkdir("./$env->{tmp_dir}") unless (-d "./$env->{tmp_dir}");
+mkdir("./$env->{mp3_dir}") unless (-d "./$env->{mp3_dir}");
+
+mkdir("./$env->{tmp_dir}$env->{mylist_id}") unless (-d "./$env->{tmp_dir}$env->{mylist_id}");
+mkdir("./$env->{mp3_dir}$env->{mylist_id}") unless (-d "./$env->{mp3_dir}$env->{mylist_id}");
 
 print "E-mail : ";
-chomp($account->{mail} = <STDIN>);
+$account->{mail} = <STDIN>;
+$account->{mail} =~ s/[\r\n]//g;
 
 print "Password : ";
 ReadMode('noecho');
-chomp($account->{password} = ReadLine(0));
+$account->{password} = ReadLine(0);
+$account->{password} =~ s/[\r\n]//g;
 ReadMode 0;
-say;
 
 my $downloader = WWW::NicoVideo::Download->new(
     email    => $account->{mail},
     password => $account->{password},
 );
+say "\n\nLogin...";
 exit unless $downloader->login('sm9');
-my $ua = LWP::UserAgent->new(
-    cookie_jar => $downloader->user_agent->cookie_jar,
-);
+
+my $ua = LWP::UserAgent->new( cookie_jar => $downloader->user_agent->cookie_jar );
 
 my ($mylist_title, @video_list) = get_video_url_list($env->{mylist_id});
-my $total_file = scalar @video_list;
 
-say "Download $total_file files.";
+my $total_file = scalar @video_list;
+print $console->encode("Download $total_file files.\n\n");
 
 while (@video_list) {
     my $video_url = shift @video_list;
+    my $separator = "\n" . '*' x 15;
 
-    say "processing [ " . ($total_file - $#video_list - 1) . " / $total_file ]";
+    say $console->encode('*' x 30 . " Processing [ " . ($total_file - $#video_list - 1) . " / $total_file ]");
 
     my $video_id = $1 if ($video_url =~ /watch\/(\w+)$/gm);
 
@@ -93,27 +97,24 @@ while (@video_list) {
 
     my $video_info = get_video_info($internal_id);
 
-    say $console->encode("Downloading: $video_info->{video_title}");
-
+    say $console->encode("$separator Downloading: $video_info->{video_title}");
     my $flv_path = save_flv($video_id);
 
-    say $console->encode("Encoding: $video_info->{video_title} ($flv_path)");
-
-    $flv_path = cwf2fws($flv_path) if ($flv_path !~ /mp4$/);
-
+    say $console->encode("$separator Encoding: $video_info->{video_title} ($flv_path)");
+    $flv_path = cwf2fws($flv_path) if ($flv_path =~ /x-shockwave-flash$/);
     system($env->{encoder}, '-i', $flv_path, '-ab', $env->{mp3_rate}, "$flv_path.mp3");
 
-    say $console->encode("Encoded: $video_info->{video_title} ($flv_path)");
-
+    say $console->encode("$separator Encoded: $video_info->{video_title} ($flv_path)");
     write_ID3v2_tag("$flv_path.mp3", $video_info);
     copy("$flv_path.mp3", "$env->{mp3_dir}$env->{mylist_id}/$video_id.mp3");
 
-    say 'wait 10sec...';
-    sleep 10;
-
+    if (@video_list) {
+        say "\nwait 10sec...\n";
+        sleep 10;
+    }
 }
 
-say 'Complete';
+say 'Complete!';
 chomp(my $foo= <STDIN>);
 
 exit;
@@ -150,7 +151,7 @@ sub cwf2fws {
     my $flv_path = shift;
     my ($zlib_data, $header, $type_sig, $unc, $file_prefix, $outfile);
     
-    say "Uncompressing: $flv_path", "Please wait...";
+    say $console->encode("Uncompressing: $flv_path\nPlease wait...");
 
     use Compress::Zlib;
     $file_prefix = $flv_path;
@@ -235,10 +236,11 @@ sub get_video_url_list {
 
     ($id =~ /^(\d+)/) ? $url .= "$1?rss=2.0" : die "Invalid mylist URL";
 
-    say 'Fetching RSS...';
+    print "Fetching RSS...\n\n";
+
     my $parsed_rss = XML::RSS->new->parse( $ua->get($url)->decoded_content );
 
-    say $console->encode( $parsed_rss->{channel}->{title} );
+    print $console->encode('*' x 10 . " $parsed_rss->{channel}->{title} " . '*' x 10 . "\n\n");
 
     for my $item ( @{$parsed_rss->{items}} ) {
         push @url_list, $item->{'link'};
