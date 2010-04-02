@@ -41,10 +41,14 @@ my $nico_url = {
 };
 
 my $console;
-($^O =~ /MSWin32/) 
-    ? $console = find_encoding("cp932") 
-    : $console = find_encoding("utf-8")
-;
+if ($^O =~ /MSWin32/) {
+    print "stdout encoding: cp932\n";
+    $console = find_encoding("cp932");
+}
+else {
+    print "stdout encoding: utf-8\n";
+    $console = find_encoding("utf-8");
+}
 
 # INIT
 
