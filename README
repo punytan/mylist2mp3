@@ -1,0 +1,10 @@
+NAME
+
+mylist2mp3 - Convert registered movies on NicoVideo;s mylist to MP3 files with appropriate MP3 tags.
+
+USAGE
+
+$ perl mylist2mp3.pl
+
+ * Input the mylist number
+ * Input your Email address and password
