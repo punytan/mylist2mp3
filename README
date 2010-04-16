@@ -1,10 +1,25 @@
 NAME
+    mylist2mp3
 
-mylist2mp3 - Convert registered movies on NicoVideo;s mylist to MP3 files with appropriate MP3 tags.
+DESCRIPTION
+    Convert registered movies on NicoVideo's mylist to MP3 files with appropriate MP3 tags.
+
+INSTALLATION
+    On Debian/Ubuntu :
+        $ git clone git://github.com/punytan/mylist2mp3.git
+        $ sudo apt-get install ffmpeg
+
+    On Windows :
+        Download and uncompress zip/tar file.
+        Download and set the path to ffmpeg from http://tirnanog.fate.jp/mirror/ffmpeg/
 
 USAGE
+    $ perl mylist2mp3.pl
 
-$ perl mylist2mp3.pl
+    * Input the mylist number
+    * Input your Email address and password
 
- * Input the mylist number
- * Input your Email address and password
+CAUTION
+    There is no function to check the existence of ffmpeg. So, you should 
+    install and set the path to it. This task is assigned to ramu. See Isuues.
+
