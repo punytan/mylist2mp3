@@ -50,6 +50,11 @@ else {
 
 # INIT
 
+my $ffmpeg_version = system('ffmpeg', '-version');
+if ($ffmpeg_version ne '0') {
+    die "ffmpeg is not installed. Take a look at README";
+}
+
 print "mylist URL:\n\thttp://www.nicovideo.jp/mylist/";
 ReadMode(0);
 $env->{mylist_id} = ReadLine(0);

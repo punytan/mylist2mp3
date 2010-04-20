@@ -19,7 +19,3 @@ USAGE
     * Input the mylist number
     * Input your Email address and password
 
-CAUTION
-    There is no function to check the existence of ffmpeg. So, you should 
-    install and set the path to it. This task is assigned to ramu. See Isuues.
-
